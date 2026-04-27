@@ -1,0 +1,23 @@
+id: sm-checks/http-healthz
+name: HTTP Healthcheck (Synthetic Monitoring)
+version: 0.1.0
+type: synthetic-monitoring-check
+target: grafana-cloud-sm
+description: |
+  Generic HTTP GET health check for Grafana Cloud Synthetic Monitoring.
+  Defaults to /healthz path on the configured target with a 10-minute
+  frequency, 5-second timeout, and a single probe location (Atlanta).
+
+requires:
+  api: synthetic-monitoring-api
+  variables:
+    - service
+    - target
+    - team
+    - createdby
+    - alertgroup
+  optional_variables:
+    - path             # default: /healthz
+    - frequency_ms     # default: 600000 (10 min)
+    - timeout_ms       # default: 5000
+    - probes           # default: [853] (Atlanta)

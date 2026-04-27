@@ -1,0 +1,62 @@
+title_template: "SM_HealthCheck_{{ service_slug }}_DOWN"
+ruleGroup: synthetic-monitoring-appstatus
+folderUID: sm-alerts-folder
+noDataState: Alerting
+execErrState: Alerting
+for: 5m
+condition: C
+data:
+  - refId: A
+    queryType: ""
+    relativeTimeRange: { from: 600, to: 0 }
+    datasourceUid: grafanacloud-prom
+    model:
+      editorMode: code
+      expr: 'avg_over_time(probe_success{job="{{ job }}", instance="{{ target }}"}[5m])'
+      instant: false
+      intervalMs: 60000
+      legendFormat: __auto
+      maxDataPoints: 43200
+      range: true
+      refId: A
+  - refId: B
+    queryType: ""
+    relativeTimeRange: { from: 0, to: 0 }
+    datasourceUid: __expr__
+    model:
+      conditions:
+        - evaluator: { params: [0, 0], type: gt }
+          operator: { type: and }
+          query: { params: [A] }
+          reducer: { params: [], type: last }
+          type: query
+      expression: A
+      reducer: last
+      refId: B
+      type: reduce
+  - refId: C
+    queryType: ""
+    relativeTimeRange: { from: 0, to: 0 }
+    datasourceUid: __expr__
+    model:
+      conditions:
+        - evaluator: { params: [1, 0], type: lt }
+          operator: { type: and }
+          query: { params: [B] }
+          reducer: { params: [], type: last }
+          type: query
+      expression: B
+      refId: C
+      type: threshold
+labels:
+  team: "{{ team }}"
+  createdby: "{{ createdby }}"
+  alertgroup: "{{ alertgroup }}"
+  service: "{{ service }}"
+  severity: "{{ severity | default('critical') }}"
+annotations:
+  summary: "{{ service }} health check is failing"
+  description: 'The synthetic check for {{ "{{" }} $labels.instance {{ "}}" }} (job={{ "{{" }} $labels.job {{ "}}" }}) has been failing for 5+ minutes. Probe success rate: {{ "{{" }} $values.B {{ "}}" }}'
+  runbook_url: "{{ target }}"
+  dashboard_url: "{{ dashboard_url }}"
+isPaused: false

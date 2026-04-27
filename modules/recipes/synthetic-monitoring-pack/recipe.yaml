@@ -1,0 +1,46 @@
+id: recipes/synthetic-monitoring-pack
+name: Synthetic Monitoring Pack
+version: 0.1.0
+description: |
+  End-to-end Grafana Cloud Synthetic Monitoring setup. For every service
+  you list, this recipe creates an HTTP /healthz check, an alert rule that
+  fires on 5+ minutes of failure, and routes the alerts to Slack via a
+  rich notification template.
+
+modules:
+  - id: sm-checks/http-healthz
+    apply_for_each: services
+  - id: alert-rules/sm-http-healthcheck
+    apply_for_each: services
+  - id: slack-templates/app-status-rich
+    apply_once: true
+
+inputs:
+  services:
+    type: list
+    description: One entry per service to monitor.
+    item_schema:
+      service: string
+      service_slug: string
+      target: url
+      dashboard_url: url
+      job: string
+  defaults:
+    team: devops
+    createdby: tarun_shubham
+    alertgroup: appstatus
+    severity: critical
+    path: /healthz
+    frequency_ms: 600000
+
+example:
+  defaults:
+    team: devops
+    createdby: tarun_shubham
+    alertgroup: appstatus
+  services:
+    - service: encryptly
+      service_slug: encryptly
+      target: https://api.satschel.com/v2/encryptly/healthz
+      dashboard_url: https://satschel.grafana.net/a/grafana-synthetic-monitoring-app/checks/1761190
+      job: "Api [encryptly] /healthz"

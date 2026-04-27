@@ -1,0 +1,20 @@
+job: "Api [{{ service }}] {{ path | default('/healthz') }}"
+target: "{{ target }}"
+frequency: "{{ frequency_ms | default(600000) }}"
+timeout: "{{ timeout_ms | default(5000) }}"
+enabled: true
+labels:
+  - { name: team,       value: "{{ team }}" }
+  - { name: createdby,  value: "{{ createdby }}" }
+  - { name: alertgroup, value: "{{ alertgroup }}" }
+probes: {{ probes | default([853]) | tojson }}
+alertSensitivity: none
+basicMetricsOnly: true
+settings:
+  http:
+    ipVersion: Any
+    method: GET
+    noFollowRedirects: false
+    failIfSSL: false
+    failIfNotSSL: true
+    validStatusCodes: [200, 201]

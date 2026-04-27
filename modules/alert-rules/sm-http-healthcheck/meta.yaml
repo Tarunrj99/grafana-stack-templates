@@ -1,0 +1,28 @@
+id: alert-rules/sm-http-healthcheck
+name: Synthetic Monitoring HTTP Healthcheck
+version: 0.1.0
+type: alert-rule
+target: grafana-cloud
+description: |
+  An alert rule that fires when a Grafana Synthetic Monitoring HTTP check
+  has been failing for 5 minutes. Uses probe_success metric averaged over
+  5m and routes via the alertgroup label to your Slack contact point.
+
+requires:
+  datasource: grafanacloud-prom
+  metric: probe_success
+  variables:
+    - service           # short name, e.g. "encryptly"
+    - service_slug      # safe-for-rule-name slug, e.g. "encryptly"
+    - job               # Grafana SM job string, e.g. "Api [encryptly] /healthz"
+    - target            # full URL the check probes
+    - dashboard_url     # link to the SM dashboard for this check
+    - team
+    - createdby
+    - alertgroup
+  optional_variables:
+    - severity          # defaults to "critical"
+
+provides:
+  rule_group: synthetic-monitoring-appstatus
+  folder_uid: sm-alerts-folder

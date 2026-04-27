@@ -1,0 +1,32 @@
+id: slack-templates/app-status-rich
+name: App Status — Rich Slack
+version: 0.1.0
+type: notification-template
+target: grafana-cloud
+description: |
+  A polished Slack notification template for application status alerts.
+  Renders alerts with a colored bar (red firing / green resolved), per-alert
+  fields (service, severity, team, endpoint, started/resolved), and inline
+  link "buttons" for Runbook, Dashboard, and Silence.
+
+  Designed for use with Grafana Cloud's Slack contact-point. Pairs with
+  alert rules that use the labels: team, service, severity, alertgroup
+  and the annotations: runbook_url, dashboard_url, description.
+
+requires:
+  contact_point_type: slack
+  alert_labels: [team, service, severity, alertgroup]
+  alert_annotations: [runbook_url, dashboard_url, description]
+
+provides:
+  templates:
+    - app_status.title
+    - app_status.text
+
+contact_point_settings:
+  title: '{{ template "app_status.title" . }}'
+  text:  '{{ template "app_status.text" . }}'
+  username: Grafana SM
+  iconEmoji: ':satellite_antenna:'
+
+screenshots: []
