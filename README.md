@@ -29,9 +29,12 @@ gst install recipes/synthetic-monitoring-pack \
 
 ## How alert delivery works
 
-Alerts produced by these modules flow through [`cloud-relay-hub`](https://github.com/Tarunrj99/cloud-relay-hub) — a small public relay that transforms Grafana payloads into rich Slack Block Kit messages, with built-in runtime configuration.
+Alerts produced by these modules can flow either:
 
-You can opt out and send directly to Slack from Grafana — see [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md).
+- **Direct to Slack** — Grafana's built-in Slack contact-point pointed at a Slack incoming webhook. Simplest path, no extra hops.
+- **Through a relay layer** — an optional Cloudflare Worker (or similar edge function) sits in front of Slack. The worker reads `relay.manifest.json` from this repo and uses it as a runtime kill-switch (project status, deployment overrides, etc.) before forwarding to Slack. This gives you a single file to flip if alert volume gets out of hand or something misfires in production.
+
+The catalog and `gst` CLI in this repo are independent of which delivery path you choose. See [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) for the runtime manifest schema.
 
 ## License
 
