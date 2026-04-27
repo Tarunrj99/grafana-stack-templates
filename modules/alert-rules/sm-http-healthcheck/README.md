@@ -16,13 +16,13 @@ When applying this template you provide:
 
 | Variable | Example | Required |
 |---|---|---|
-| `service` | `encryptly` | yes |
-| `service_slug` | `encryptly` | yes |
-| `job` | `Api [encryptly] /healthz` | yes |
-| `target` | `https://api.satschel.com/v2/encryptly/healthz` | yes |
+| `service` | `auth-service` | yes |
+| `service_slug` | `auth-service` | yes |
+| `job` | `Api [auth-service] /healthz` | yes |
+| `target` | `https://api.acme.com/v2/auth-service/healthz` | yes |
 | `dashboard_url` | `https://yourstack.grafana.net/a/grafana-synthetic-monitoring-app/checks/123` | yes |
 | `team` | `devops` | yes |
-| `createdby` | `tarun_shubham` | yes |
+| `createdby` | `your-username` | yes |
 | `alertgroup` | `appstatus` | yes |
 | `severity` | `critical` | no (default `critical`) |
 

@@ -1,0 +1,17 @@
+defaults:
+  team: devops
+  createdby: your-username
+  alertgroup: appstatus
+  severity: critical
+  path: /healthz
+  frequency_ms: 600000
+  timeout_ms: 5000
+  probes: [853]
+  folder_title: SM Alerts
+
+services:
+  - service: auth-service
+    service_slug: auth-service
+    target: https://api.acme.com/v2/auth-service/healthz
+    job: "Api [auth-service] /healthz"
+    dashboard_url: https://acme.grafana.net/a/grafana-synthetic-monitoring-app/checks/12345

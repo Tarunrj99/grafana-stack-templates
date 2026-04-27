@@ -12,9 +12,9 @@ requires:
   datasource: grafanacloud-prom
   metric: probe_success
   variables:
-    - service           # short name, e.g. "encryptly"
-    - service_slug      # safe-for-rule-name slug, e.g. "encryptly"
-    - job               # Grafana SM job string, e.g. "Api [encryptly] /healthz"
+    - service           # short name, e.g. "auth-service"
+    - service_slug      # safe-for-rule-name slug, e.g. "auth-service"
+    - job               # Grafana SM job string, e.g. "Api [auth-service] /healthz"
     - target            # full URL the check probes
     - dashboard_url     # link to the SM dashboard for this check
     - team

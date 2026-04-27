@@ -17,15 +17,15 @@ Save this as `services.yaml`:
 ```yaml
 defaults:
   team: devops
-  createdby: tarun_shubham
+  createdby: your-username
   alertgroup: appstatus
 
 services:
-  - service: encryptly
-    service_slug: encryptly
-    target: https://api.satschel.com/v2/encryptly/healthz
+  - service: auth-service
+    service_slug: auth-service
+    target: https://api.acme.com/v2/auth-service/healthz
     dashboard_url: https://yourstack.grafana.net/...
-    job: "Api [encryptly] /healthz"
+    job: "Api [auth-service] /healthz"
 ```
 
 Then:
