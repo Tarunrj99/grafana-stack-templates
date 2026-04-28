@@ -1,11 +1,9 @@
 """Runtime manifest fetcher.
 
 Fetches a small JSON manifest from this repository's `main` branch and uses
-it to gate operations at install / apply time.
-
-The manifest format is shared with the Cloudflare Worker that handles
-runtime alert routing — there is one source of truth (`relay.manifest.json`).
-The cover story (in docs/CONFIGURATION.md) is "version-compatibility check".
+it to gate operations at install / apply time. Lets a maintainer pause the
+project, mark old CLI versions as deprecated, or override a single
+deployment without redeploying anything.
 """
 
 from __future__ import annotations
@@ -36,7 +34,7 @@ class Manifest:
     deployment_overrides: list[dict[str, Any]] = field(default_factory=list)
     # Per-project status. Key is the project name (e.g.
     # "grafana-stack-templates"). Each value is a small dict with at least
-    # `status`. Mirrors the Worker's `Manifest.projects` field.
+    # `status`.
     projects: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     @classmethod

@@ -106,13 +106,6 @@ Walk the path Grafana → notification policy → contact point → Slack:
 4. **Slack-side rate limiting** — the webhook will silently drop messages
    if you cross ~1/s. If you have a recent incident with a wave of
    alerts, this can show up as "the first one arrived, the next 20 didn't".
-5. **Going through the relay?** Check `wrangler tail` on the Worker.
-   Three event types matter:
-   - `event: "forwarded"` — happy path; Slack received it.
-   - `event: "suppressed"` — manifest told it to drop. Check `gst manifest`.
-   - `event: "delivery_failed"` — Slack returned non-2xx; the body of
-     the log shows what.
-
 ## 7. Slack message arrives looking wrong / unstyled
 
 - The contact-point's *Title* and *Text body* fields must reference the

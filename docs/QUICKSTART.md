@@ -86,7 +86,7 @@ followed by a JSON record of every resource that was created or updated.
 - *Alerts → Contact points → Notification templates* — `app_status_slack`
   template installed.
 - *Alerts → Contact points → application-status* — points at your Slack
-  webhook (or the relay URL).
+  webhook.
 
 ## 8. Trigger a smoke test (optional)
 

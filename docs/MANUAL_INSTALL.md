@@ -102,10 +102,8 @@ copied the file from this repo and not from somewhere else.
 2. **Name:** `application-status` (used downstream in alert rules and
    notification policies).
 3. **Integration:** *Slack*.
-4. **URL:**
-   - **Direct:** paste your Slack incoming webhook URL.
-   - **Via the relay:** paste the Worker URL plus your deployment ID, e.g.
-     `https://your-worker.example.workers.dev/v1/forward?deployment_id=my-prod`.
+4. **URL:** paste your Slack incoming webhook URL
+   ([api.slack.com/messaging/webhooks](https://api.slack.com/messaging/webhooks)).
 5. **Title:** `{{ template "app_status.title" . }}`
 6. **Text body:** `{{ template "app_status.text" . }}`
 7. Toggle **Show advanced** and set:

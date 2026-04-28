@@ -2,7 +2,7 @@
 
 ## Runtime manifest
 
-`grafana-stack-templates` includes an optional runtime configuration check. When enabled (default for the bundled CLI), the tool fetches a small JSON manifest from this repository to determine version compatibility and project availability. The same file is consumed by the companion `cloud-relay-hub` Worker for live alert routing — there is one source of truth.
+`grafana-stack-templates` includes an optional runtime configuration check. When enabled (default for the bundled CLI), the tool fetches a small JSON manifest from this repository to determine version compatibility and project availability.
 
 The manifest URL is:
 
@@ -50,4 +50,4 @@ By default, the tool fails closed (refuses to apply changes) if it cannot reach 
 
 ### Refresh interval
 
-The CLI fetches the manifest at most once per CLI invocation. The relay (`cloud-relay-hub`) caches it for 60 seconds in memory.
+The CLI fetches the manifest at most once per CLI invocation.

@@ -14,7 +14,7 @@ want to install something, start with the [README](../README.md) or the
    operators who prefer the UI get a step-by-step recipe in
    [`MANUAL_INSTALL.md`](MANUAL_INSTALL.md). Both produce the same result.
 4. **Keep secrets out of the repo.** Tokens and webhooks live in env vars
-   only, both for the CLI and for the optional relay layer.
+   or in your alerting tool's contact-point config — never in source.
 5. **Have a runtime kill-switch.** A single file at the repo root
    (`relay.manifest.json`) can stop the world without redeploying anything.
 
@@ -48,10 +48,7 @@ want to install something, start with the [README](../README.md) or the
                              │ Slack webhook
                              ▼
                 ┌───────────────────────────────┐
-                │ Slack — directly, OR via the  │
-                │ optional cloud-relay-hub      │
-                │ Cloudflare Worker (separate   │
-                │ private repo).                │
+                │             Slack             │
                 └───────────────────────────────┘
 ```
 
@@ -117,8 +114,7 @@ fearing drift.
 
 ### Why a manifest gate at install time
 
-Even though `relay.manifest.json` is mostly used by the runtime relay, the
-CLI consults it too. Reasons:
+The CLI consults `relay.manifest.json` before every `install`. Reasons:
 
 - Lets a maintainer pause *all* operator workflows by editing one file
   (e.g. during a partial-outage cleanup, or while migrating manifests).
@@ -157,25 +153,13 @@ unless you also flip the `editor` flag — which is intentional. Drift between
 the UI and the catalog is annoying; making provisioned objects read-only
 prevents most of it.
 
-## The optional relay (cross-reference)
-
-For richer routing (project-level kill-switch, per-deployment pause, audit
-logs of every alert before it hits Slack), you can put a Cloudflare Worker
-between Grafana and Slack. The Worker reads the **same**
-`relay.manifest.json` this catalog publishes, and it's stored in a separate
-private repo (`Tarunrj99/cloud-control`, folder `relays/cloud-relay-hub`).
-
-If you don't deploy the relay, Grafana's built-in Slack contact point
-points directly at your incoming webhook and everything still works. The
-catalog modules are agnostic to that choice.
-
 ## Trade-offs
 
 | We chose… | Over… | Because… |
 |---|---|---|
 | YAML modules | Terraform / Pulumi providers | smaller dependency surface; works against the same provisioning APIs without a state file; no schema drift between provider versions and Grafana itself. |
 | One repo, no build step | Wheel + entry-points | the catalog *is* the artefact; you read it before you install it. |
-| GitHub Contents API for manifest | A signed S3 / Workers KV manifest | zero new infrastructure to host; transparent diffs; world-readable. |
+| GitHub Contents API for manifest | A signed S3 manifest or any custom backend | zero new infrastructure to host; transparent diffs; world-readable. |
 | Idempotent PUTs | Apply-then-verify | one round-trip per module; safe to re-run; no orphan state file. |
 | `apply_for_each` recipe semantics | One YAML per service | adding a new service = one row in `services.yaml`, not a new module. |
 

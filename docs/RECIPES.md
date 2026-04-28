@@ -9,11 +9,10 @@ Day-two playbook. Every section answers one common operator question.
 3. [Rotate the Slack webhook](#3-rotate-the-slack-webhook)
 4. [Pause one project (kill-switch)](#4-pause-one-project-kill-switch)
 5. [Pause one deployment without affecting the others](#5-pause-one-deployment-without-affecting-the-others)
-6. [Migrate from direct-Slack to the relay](#6-migrate-from-direct-slack-to-the-relay)
-7. [Speed up an SM check during an incident, then restore](#7-speed-up-an-sm-check-during-an-incident-then-restore)
-8. [Decommission a service cleanly](#8-decommission-a-service-cleanly)
-9. [Audit: list every alert rule + its routing labels](#9-audit-list-every-alert-rule--its-routing-labels)
-10. [Cut a release](#10-cut-a-release)
+6. [Speed up an SM check during an incident, then restore](#6-speed-up-an-sm-check-during-an-incident-then-restore)
+7. [Decommission a service cleanly](#7-decommission-a-service-cleanly)
+8. [Audit: list every alert rule + its routing labels](#8-audit-list-every-alert-rule--its-routing-labels)
+9. [Cut a release](#9-cut-a-release)
 
 ---
 
@@ -84,28 +83,13 @@ needs to change.
 
 Goal: replace the Slack incoming webhook URL without dropping any alert.
 
-### A) When you post directly to Slack from Grafana
-
-Update the Grafana contact point:
-
 1. Generate a new webhook in Slack
    ([api.slack.com/messaging/webhooks](https://api.slack.com/messaging/webhooks)).
-2. UI: *Alerts → Contact points → application-status → Edit → URL*.
+2. UI: *Alerts → Contact points → your-contact-point → Edit → URL*.
 3. Click *Test* — you should see the test message land in the new channel.
 4. Save.
 5. Revoke the old webhook in Slack so nothing accidentally posts there
    again.
-
-### B) When you post via the cloud-relay-hub Worker
-
-The webhook is stored only in the Worker's KV (Grafana doesn't see it):
-
-1. Generate the new webhook.
-2. Update the KV entry — see the relay repo's runbook
-   (`docs/RUNBOOK.md` in the private `cloud-control` repo).
-3. Revoke the old webhook in Slack.
-
-Grafana's contact point stays pointed at the relay URL the whole time.
 
 ---
 
@@ -126,13 +110,9 @@ Edit `relay.manifest.json` on `main`:
 }
 ```
 
-Commit and push to `main`. Within ~60 seconds:
-
-- The optional relay drops every alert it gets for this project (logs
-  `event: "suppressed"`, returns `200 OK` to Grafana, never posts to
-  Slack).
-- Every new `gst install` invocation refuses to run with
-  `refused: project 'grafana-stack-templates' is currently 'paused'`.
+Commit and push to `main`. Within seconds, every new `gst install`
+invocation refuses to run with
+`refused: project 'grafana-stack-templates' is currently 'paused'`.
 
 Resume by setting `status: "active"` and pushing.
 
@@ -155,40 +135,12 @@ its alerts without affecting other stacks that share this catalog.
 }
 ```
 
-Commit, push. The CLI refuses to install for `my-prod` only; the relay
-drops alerts for that deployment only. Everything else keeps working.
+Commit, push. The CLI refuses to install for `my-prod` only. Everything
+else keeps working.
 
 ---
 
-## 6. Migrate from direct-Slack to the relay
-
-Goal: insert the optional `cloud-relay-hub` Cloudflare Worker between
-Grafana and Slack so you get the kill-switch + audit log + per-deployment
-suppression.
-
-1. Stand up the Worker (separate private repo). It exposes a URL like
-   `https://your-worker.example.workers.dev`.
-2. Enroll the Slack webhook into the Worker's KV (one-shot, behind the
-   `X-Admin-Token` header — see the relay's runbook).
-3. In Grafana: *Alerts → Contact points → application-status → Edit →
-   URL*. Replace the Slack webhook with the Worker URL plus your
-   deployment ID, e.g.:
-
-   ```
-   https://your-worker.example.workers.dev/v1/forward?deployment_id=my-prod
-   ```
-
-4. Click *Test*; expect a Slack message to arrive *via* the Worker (you'll
-   see the entry in `wrangler tail` if you have it running).
-5. Watch alerts for one alert cycle. Then revoke the old direct-Slack
-   webhook so it can't be re-used.
-
-The catalog modules don't know or care whether you went through the relay.
-Same alert rules, same templates, same labels.
-
----
-
-## 7. Speed up an SM check during an incident, then restore
+## 6. Speed up an SM check during an incident, then restore
 
 Goal: when triaging, you want probes every minute, not every ten minutes.
 
@@ -223,7 +175,7 @@ updated in place — no duplicate created.
 
 ---
 
-## 8. Decommission a service cleanly
+## 7. Decommission a service cleanly
 
 Goal: remove the SM check, the alert rule, and the dashboard panel for a
 retired service.
@@ -239,7 +191,7 @@ making teardown explicit avoids "oops I deleted prod"). Use the Grafana UI:
 
 ---
 
-## 9. Audit: list every alert rule + its routing labels
+## 8. Audit: list every alert rule + its routing labels
 
 ```bash
 curl -sH "Authorization: Bearer $GRAFANA_TOKEN" \
@@ -256,7 +208,7 @@ diverged from the catalog.
 
 ---
 
-## 10. Cut a release
+## 9. Cut a release
 
 Maintainers only.
 

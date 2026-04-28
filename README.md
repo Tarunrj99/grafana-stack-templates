@@ -146,16 +146,11 @@ HTTP-status error before doing any partial work.
                                         │ webhook
                                         ▼
                               ┌──────────────────────┐
-                              │  Slack (direct)      │
-                              │   — or —             │
-                              │  cloud-relay-hub →   │ (optional Cloudflare
-                              │  Slack               │  Worker, with kill-
-                              └──────────────────────┘  switch + KV-stored
-                                                        webhooks)
+                              │        Slack         │
+                              └──────────────────────┘
 ```
 
-The catalog and CLI are independent of which delivery path you choose. See
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full design rationale
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full design rationale
 (why modules look the way they do, how recipes compose, what the runtime
 manifest gates, and the trade-offs of CLI vs UI installation).
 
@@ -173,7 +168,7 @@ grafana-stack-templates/
 ├── CODE_OF_CONDUCT.md
 ├── Makefile                         ← `make install / test / lint`
 ├── pyproject.toml                   ← installable as `grafana-stack-templates`
-├── relay.manifest.json              ← runtime kill-switch (read by `gst` and the relay)
+├── relay.manifest.json              ← runtime kill-switch (read by `gst`)
 ├── .env.example                     ← starter env file
 ├── .github/                         ← issue + PR templates
 │
@@ -338,12 +333,8 @@ install via UI, then later refactor with `gst`).
 ## Runtime manifest (kill-switch)
 
 A small JSON file at the repo root, [`relay.manifest.json`](relay.manifest.json),
-acts as a runtime gate consumed by both:
-
-- The `gst` CLI before every `install` call (refuses to apply if
-  `service_status != "active"`)
-- The optional `cloud-relay-hub` Cloudflare Worker on every alert (drops
-  forwards if `service_status != "active"`)
+acts as a runtime gate the `gst` CLI consults before every `install` call.
+If `service_status != "active"`, `gst install` refuses to run.
 
 ```jsonc
 {
@@ -358,10 +349,10 @@ acts as a runtime gate consumed by both:
 }
 ```
 
-Flip `service_status: "active" → "paused"`, commit to `main`, and within
-~60 seconds every alert flowing through the relay drops to a no-op
-(`200 OK`, no Slack post) and every new `gst install` invocation refuses
-to run. Full schema: [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md).
+Flip `service_status: "active" → "paused"`, commit to `main`, and every new
+`gst install` invocation refuses to run within seconds. Useful when you've
+shipped a known-bad recipe and want to stop new installs without yanking
+the package. Full schema: [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md).
 
 ---
 

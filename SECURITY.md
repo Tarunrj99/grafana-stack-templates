@@ -46,10 +46,8 @@ In scope:
 
 - Vulnerabilities in the `grafana_stack_templates` Python package
   (catalog reader, manifest fetcher, installers, CLI).
-- Vulnerabilities in the runtime manifest schema or its consumers
-  (the CLI's install-time gate; the optional Cloudflare Worker relay
-  uses the same schema and is in scope only for the schema itself,
-  not the Worker code which lives in a separate repo).
+- Vulnerabilities in the runtime manifest schema or the CLI's install-time
+  gate (`src/grafana_stack_templates/manifest.py`).
 - Example modules in `modules/` and `examples/` that could leak secrets
   or grant unintended Grafana permissions when used as documented.
 

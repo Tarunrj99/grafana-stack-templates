@@ -12,5 +12,5 @@
     }
   },
   "deployment_overrides": [],
-  "_doc": "Master runtime manifest for cloud-relay-hub. See docs/CONFIGURATION.md."
+  "_doc": "Runtime manifest consulted by the gst CLI before every install. See docs/CONFIGURATION.md."
 }

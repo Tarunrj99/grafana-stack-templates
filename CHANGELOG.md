@@ -13,8 +13,7 @@ _No changes yet — open a PR to add an entry here._
 ## [0.1.0] — 2026-04-28
 
 First public release. The catalog is small but functional end-to-end and
-has been validated against a live Grafana Cloud stack and a Cloudflare-Worker
-relay running in front of Slack.
+has been validated against a live Grafana Cloud stack.
 
 ### Added
 
@@ -52,9 +51,9 @@ relay running in front of Slack.
   Slack template, applied per service in `examples/services.yaml`.
 
 #### Runtime manifest
-- `relay.manifest.json` at repo root. One source of truth consumed by both
-  the CLI's install-time gate and the optional `cloud-relay-hub`
-  Cloudflare Worker that sits between Grafana and Slack.
+- `relay.manifest.json` at repo root. Consulted by the CLI before every
+  `install` to gate on project status, deployment overrides, and the
+  minimum supported CLI version.
 - Schema documented in [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md):
   `service_status` (global kill-switch), `projects` (per-project pause),
   `deployment_overrides` (per-deployment pause), `min_supported_version`,
@@ -71,8 +70,7 @@ relay running in front of Slack.
 - [`docs/MANUAL_INSTALL.md`](docs/MANUAL_INSTALL.md) — UI walkthrough for
   each module type, no CLI required.
 - [`docs/RECIPES.md`](docs/RECIPES.md) — operational playbook (rotate
-  webhook, pause one project, switch templates, add a service to the pack,
-  cut over to the relay).
+  webhook, pause one project, switch templates, add a service to the pack).
 - [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) — runtime manifest
   schema, env vars, defaults.
 - [`docs/SAMPLE_OUTPUT.md`](docs/SAMPLE_OUTPUT.md) — rendered Slack messages
@@ -104,13 +102,12 @@ relay running in front of Slack.
   (76 HTTP + 3 newly added — 2 HTTP + 1 TCP for WebSocket), 71 alert rules
   conforming 100% to the standard (`for: 5m`, `severity: critical`,
   `team: devops`, `alertgroup: appstatus`), one canonical
-  `application-status` contact point routed via the kill-switch-gated
-  Cloudflare Worker relay.
+  `application-status` contact point routed to Slack.
 - End-to-end Slack alert-latency measured: ~6 m at probe = 60 s,
   ~10–20 m at probe = 600 s. Documented timeline + render samples included.
-- Kill-switch validated: editing `relay.manifest.json` →
-  `service_status: paused` suppresses Slack delivery within ~60 s. Flipping
-  back to `active` resumes within ~60 s.
+- Install-gate validated: editing `relay.manifest.json` →
+  `service_status: paused` causes new `gst install` invocations to refuse
+  within seconds. Flipping back to `active` resumes within seconds.
 
 [Unreleased]: https://github.com/Tarunrj99/grafana-stack-templates/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/Tarunrj99/grafana-stack-templates/releases/tag/v0.1.0
