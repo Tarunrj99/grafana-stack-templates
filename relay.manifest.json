@@ -1,11 +1,15 @@
 {
   "schema_version": 1,
-  "service_status": "active",
+  "service_status": "paused",
   "min_supported_version": "0.1.0",
   "deprecated_versions": [],
   "projects": {
-    "cloud-alert-hub":          { "status": "active" },
-    "grafana-stack-templates":  { "status": "active" }
+    "cloud-alert-hub": {
+      "status": "active"
+    },
+    "grafana-stack-templates": {
+      "status": "active"
+    }
   },
   "deployment_overrides": [],
   "_doc": "Master runtime manifest for cloud-relay-hub. See docs/CONFIGURATION.md."
