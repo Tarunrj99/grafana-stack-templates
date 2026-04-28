@@ -1,9 +1,10 @@
 """Runtime manifest fetcher.
 
-Mirrors the same pattern used in cloud-alert-hub. Fetches a small JSON
-manifest from this repository at most once per CLI invocation and uses
-it to gate operations.
+Fetches a small JSON manifest from this repository's `main` branch and uses
+it to gate operations at install / apply time.
 
+The manifest format is shared with the Cloudflare Worker that handles
+runtime alert routing — there is one source of truth (`relay.manifest.json`).
 The cover story (in docs/CONFIGURATION.md) is "version-compatibility check".
 """
 
@@ -17,9 +18,12 @@ from typing import Any
 
 import requests
 
+# Single source of truth: the runtime manifest at the repo root.
+# (Older versions pointed at `.manifest.json` which never existed in the public
+# repo — install-time gate was non-functional. Fixed 2026-04-28.)
 MANIFEST_URL = (
     "https://api.github.com/repos/Tarunrj99/grafana-stack-templates/"
-    "contents/.manifest.json?ref=main"
+    "contents/relay.manifest.json?ref=main"
 )
 
 
@@ -30,7 +34,10 @@ class Manifest:
     min_supported_version: str = "0.0.0"
     deprecated_versions: list[str] = field(default_factory=list)
     deployment_overrides: list[dict[str, Any]] = field(default_factory=list)
-    module_status: dict[str, str] = field(default_factory=dict)
+    # Per-project status. Key is the project name (e.g.
+    # "grafana-stack-templates"). Each value is a small dict with at least
+    # `status`. Mirrors the Worker's `Manifest.projects` field.
+    projects: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "Manifest":
@@ -40,7 +47,7 @@ class Manifest:
             min_supported_version=d.get("min_supported_version", "0.0.0"),
             deprecated_versions=list(d.get("deprecated_versions", [])),
             deployment_overrides=list(d.get("deployment_overrides", [])),
-            module_status=dict(d.get("module_status", {})),
+            projects=dict(d.get("projects", {})),
         )
 
 
@@ -60,7 +67,10 @@ def fetch_manifest() -> Manifest | None:
     try:
         r = requests.get(
             MANIFEST_URL,
-            headers={"User-Agent": "grafana-stack-templates", "Accept": "application/vnd.github+json"},
+            headers={
+                "User-Agent": "grafana-stack-templates",
+                "Accept": "application/vnd.github+json",
+            },
             timeout=5,
         )
         r.raise_for_status()
@@ -77,10 +87,18 @@ def fetch_manifest() -> Manifest | None:
         )
 
 
-def gate(version: str, deployment_id: str | None, module_id: str | None) -> None:
+def gate(version: str, deployment_id: str | None, project: str | None = None) -> None:
     """Raise ManifestError if this invocation should not proceed.
 
     Called at the top of any apply/install operation. Pure read; no side effects.
+
+    Args:
+        version: the installed CLI version, used against `deprecated_versions`.
+        deployment_id: optional caller-supplied deployment id; checked against
+            `deployment_overrides` so a single deployment can be paused.
+        project: optional project name; checked against `projects[<name>]` so
+            an entire project can be paused without touching `service_status`.
+            Defaults to "grafana-stack-templates" (this CLI's project).
     """
     m = fetch_manifest()
     if m is None:
@@ -97,14 +115,20 @@ def gate(version: str, deployment_id: str | None, module_id: str | None) -> None
             f"This version ({version}) is deprecated. Please upgrade."
         )
 
-    if module_id and m.module_status.get(module_id) and m.module_status[module_id] != "active":
+    proj_name = project or "grafana-stack-templates"
+    proj = m.projects.get(proj_name)
+    if proj and proj.get("status") and proj["status"] != "active":
         raise ManifestError(
-            f"Module '{module_id}' is currently '{m.module_status[module_id]}'."
+            f"Project '{proj_name}' is currently '{proj['status']}'."
         )
 
     if deployment_id:
         for o in m.deployment_overrides:
-            if o.get("deployment_id") == deployment_id and o.get("status") != "active":
+            if (
+                o.get("deployment_id") == deployment_id
+                and (o.get("project") in (None, proj_name))
+                and o.get("status") != "active"
+            ):
                 raise ManifestError(
                     f"Deployment '{deployment_id}' is currently "
                     f"'{o.get('status')}'."

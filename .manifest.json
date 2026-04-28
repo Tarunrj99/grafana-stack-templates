@@ -1,9 +1,0 @@
-{
-  "schema_version": 1,
-  "service_status": "active",
-  "min_supported_version": "0.1.0",
-  "deprecated_versions": [],
-  "deployment_overrides": [],
-  "module_status": {},
-  "_doc": "Runtime manifest for grafana-stack-templates. See docs/CONFIGURATION.md."
-}

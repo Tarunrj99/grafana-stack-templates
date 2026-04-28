@@ -128,7 +128,7 @@ def cmd_manifest() -> None:
     click.echo(f"schema_version:        {m.schema_version}")
     click.echo(f"min_supported_version: {m.min_supported_version}")
     click.echo(f"deprecated_versions:   {m.deprecated_versions or '(none)'}")
-    click.echo(f"module_status:         {dict(m.module_status) or '(none)'}")
+    click.echo(f"projects:              {dict(m.projects) or '(none)'}")
     click.echo(f"deployment_overrides:  {len(m.deployment_overrides)} entries")
     for o in m.deployment_overrides:
         click.echo(f"  - {o}")
@@ -222,7 +222,7 @@ def _do_install(
     dry_run: bool,
 ) -> None:
     try:
-        gate(__version__, deployment_id=deployment_id, module_id=module_id)
+        gate(__version__, deployment_id=deployment_id)
     except ManifestError as e:
         click.secho(f"refused: {e}", fg="red", err=True)
         sys.exit(2)

@@ -2,12 +2,12 @@
 
 ## Runtime manifest
 
-`grafana-stack-templates` includes an optional runtime configuration check. When enabled (default for the bundled CLI), the tool fetches a small JSON manifest from this repository at install time to determine version compatibility and recipe availability.
+`grafana-stack-templates` includes an optional runtime configuration check. When enabled (default for the bundled CLI), the tool fetches a small JSON manifest from this repository to determine version compatibility and project availability. The same file is consumed by the companion `cloud-relay-hub` Worker for live alert routing — there is one source of truth.
 
 The manifest URL is:
 
 ```
-https://api.github.com/repos/Tarunrj99/grafana-stack-templates/contents/.manifest.json?ref=main
+https://api.github.com/repos/Tarunrj99/grafana-stack-templates/contents/relay.manifest.json?ref=main
 ```
 
 The fetched JSON has the following shape:
@@ -18,8 +18,10 @@ The fetched JSON has the following shape:
   "service_status": "active",            // overall service availability
   "min_supported_version": "0.1.0",      // minimum tool version we still support
   "deprecated_versions": [],             // versions known to have issues
-  "deployment_overrides": [],            // per-deployment configuration overrides
-  "module_status": {}                    // per-module availability flags
+  "projects": {
+    "grafana-stack-templates": { "status": "active" }
+  },
+  "deployment_overrides": []             // per-deployment configuration overrides
 }
 ```
 
@@ -28,8 +30,8 @@ The fetched JSON has the following shape:
 It allows us to:
 
 - Mark known-broken releases as deprecated without forcing every user to upgrade
-- Disable an individual module if a downstream API breaks
-- Provide deployment-specific configuration without each user editing local files
+- Pause one project independently of the others
+- Provide deployment-specific overrides without each user editing local files
 
 ### Disabling the manifest check
 
