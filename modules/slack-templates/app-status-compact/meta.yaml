@@ -1,0 +1,15 @@
+id: slack-templates/app-status-compact
+name: App Status — Compact (single-line)
+version: 0.1.0
+type: notification-template
+target: grafana-cloud
+description: |
+  A single-line-per-service Slack template. No block-kit, no colored bar,
+  no inline links — just plain mrkdwn lines that survive cold mobile
+  clients well. Designed for high-volume noise channels where you want a
+  30-second skim rather than a click-through.
+
+requires:
+  contact_point_type: slack
+  alert_labels: [service, severity]
+  alert_annotations: [runbook_url]

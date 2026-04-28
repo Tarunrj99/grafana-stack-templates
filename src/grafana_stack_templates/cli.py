@@ -15,6 +15,7 @@ from .catalog import get_module, list_modules
 from .clients import APIError, Env
 from .installers import (
     install_alert_rule,
+    install_dashboard,
     install_recipe,
     install_slack_template,
     install_sm_check,
@@ -248,6 +249,8 @@ def _do_install(
             result = install_sm_check(module, env, inputs)
         elif module.category == "alert-rules":
             result = install_alert_rule(module, env, inputs)
+        elif module.category == "dashboards":
+            result = install_dashboard(module, env, inputs)
         elif module.category == "recipes":
             result = install_recipe(module, env, inputs)
         else:

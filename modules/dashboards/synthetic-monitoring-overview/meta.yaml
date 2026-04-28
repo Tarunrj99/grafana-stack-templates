@@ -1,0 +1,20 @@
+id: dashboards/synthetic-monitoring-overview
+name: Synthetic Monitoring — overview
+version: 0.1.0
+type: dashboard
+target: grafana-cloud
+description: |
+  A single-pane dashboard listing every Synthetic Monitoring check on the
+  stack with its current probe_success state, p95 latency, and last
+  failure timestamp. Designed to be the screen you put up during a Slack
+  huddle when a healthcheck alert fires.
+
+  No per-service edits required — the dashboard uses
+  label_values(probe_success, instance) so adding a new SM check
+  auto-populates everywhere.
+
+requires:
+  datasources:
+    - { name: prom, type: prometheus }
+  variables:
+    - folder        # default: "SM Alerts"

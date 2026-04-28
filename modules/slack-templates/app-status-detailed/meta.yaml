@@ -1,0 +1,15 @@
+id: slack-templates/app-status-detailed
+name: App Status — Detailed (incident review)
+version: 0.1.0
+type: notification-template
+target: grafana-cloud
+description: |
+  Block-kit Slack template, like app-status-rich but with the alert
+  description, all routing labels, and timestamps in two zones surfaced
+  inline. Designed for incident-review channels and post-incident
+  threads where the goal is grep-able context, not a tight headline.
+
+requires:
+  contact_point_type: slack
+  alert_labels: [team, service, severity, alertgroup]
+  alert_annotations: [runbook_url, dashboard_url, description]

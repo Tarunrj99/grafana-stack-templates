@@ -40,7 +40,7 @@ class Manifest:
     projects: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> "Manifest":
+    def from_dict(cls, d: dict[str, Any]) -> Manifest:
         return cls(
             schema_version=int(d.get("schema_version", 1)),
             service_status=d.get("service_status", "active"),
@@ -78,13 +78,13 @@ def fetch_manifest() -> Manifest | None:
         content = base64.b64decode(api_response["content"]).decode("utf-8")
         data = json.loads(content)
         return Manifest.from_dict(data)
-    except Exception:
+    except Exception as e:
         if tolerate_missing:
             return None
         raise ManifestError(
             "Could not fetch runtime manifest. To allow this, set "
             "GST_TOLERATE_MISSING_MANIFEST=1 (not recommended for production)."
-        )
+        ) from e
 
 
 def gate(version: str, deployment_id: str | None, project: str | None = None) -> None:
@@ -115,6 +115,12 @@ def gate(version: str, deployment_id: str | None, project: str | None = None) ->
             f"This version ({version}) is deprecated. Please upgrade."
         )
 
+    if _version_lt(version, m.min_supported_version):
+        raise ManifestError(
+            f"CLI version '{version}' is below the manifest's "
+            f"min_supported_version '{m.min_supported_version}'. Please upgrade."
+        )
+
     proj_name = project or "grafana-stack-templates"
     proj = m.projects.get(proj_name)
     if proj and proj.get("status") and proj["status"] != "active":
@@ -133,3 +139,26 @@ def gate(version: str, deployment_id: str | None, project: str | None = None) ->
                     f"Deployment '{deployment_id}' is currently "
                     f"'{o.get('status')}'."
                 )
+
+
+def _version_lt(a: str, b: str) -> bool:
+    """Return True if SemVer-ish version a is strictly less than b.
+
+    Pads with zeros, ignores pre-release / build suffixes after the first
+    '-' or '+'. Forgiving: returns False on parse errors so the gate is
+    fail-open for malformed versions in the manifest (the explicit
+    deprecated_versions / paused fields remain authoritative).
+    """
+    try:
+        ai = _parse_version(a)
+        bi = _parse_version(b)
+    except ValueError:
+        return False
+    return ai < bi
+
+
+def _parse_version(v: str) -> tuple[int, int, int]:
+    core = v.split("-", 1)[0].split("+", 1)[0]
+    parts = core.split(".")
+    parts = (parts + ["0", "0", "0"])[:3]
+    return tuple(int(p) for p in parts)  # type: ignore[return-value]
