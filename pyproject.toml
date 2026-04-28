@@ -9,7 +9,7 @@ description = "Curated catalog of ready-to-apply Grafana Cloud building blocks: 
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
-authors = [{name = "Tarun Saini"}]
+authors = [{name = "Tarunrj99"}]
 keywords = ["grafana", "monitoring", "alerting", "synthetic-monitoring", "slack"]
 classifiers = [
   "License :: OSI Approved :: MIT License",
